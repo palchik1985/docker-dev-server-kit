@@ -13,7 +13,7 @@ Docker starter kit and scripts for full dev environment. Nginx, php, databases a
 - Nginx забирает конфиги из папок каждого проекта, которые имеют одинаковое название - project_root/deploy/sitename.conf
 - Реализовано автоматическое обновление проектов по webhook в bitbucket (после обновления ветки, идет автообновление проекта на сервере). Ветка staging обновляется на dev сервере. Prod сервер обновляется с ветки prod
 - В ветку prod пушит только тимлид проекта, либо на основании пул-реквестов
-- В файле project_root/deploy/build.sh добавляются любые команды, необходимые для сборки проекта на сервере.
+- В файле project_root/deploy/staging/build.sh (или другое имя, которое берется из ENV настроек скрипта) добавляются любые команды, необходимые для сборки проекта на сервере.
 - Сервер имеет систему мониторинга, на основе 
 https://code-maze.com/top-docker-monitoring-tools/
 https://rancher.com/comparing-monitoring-options-for-docker-deployments/
