@@ -9,13 +9,13 @@ services:
   nginx_php:
     container_name: ${APPNAME}_nginx_php
     build:
-      context: ./nginx_php/
+      context: ./internal/nginx_php/
     working_dir: ${SITE_WORKDIR_IN_CONTAINER}
     ports:
     - 80:8080 #host:container
     volumes:
     - ./..:${SITE_WORKDIR_IN_CONTAINER}
-    - ./nginx_php/site.conf:/etc/nginx/sites-enabled/site.conf # local site configuration
+    - ./internal/nginx_php/site.conf:/etc/nginx/sites-enabled/site.conf # local site configuration
     links:
     - db
     restart: always
