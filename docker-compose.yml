@@ -15,7 +15,7 @@ services:
     - ./nginx/logs:/var/log/nginx # you can find logs - ./nginx/logs
     - ./sites-enabled:/etc/nginx/sites-enabled
 #    - ./nginx/site.conf:/etc/nginx/conf.d/site.conf # local site configuration
-    - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    - ./internal/nginx_php/config/nginx.conf:/etc/nginx/nginx.conf
     depends_on:
     - php73
   # nginx service configuration. Use "alpine" versions because it has very small volumes
