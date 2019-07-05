@@ -1,3 +1,4 @@
+
 # during to work, all containers have internal lan, and have DNS names like their names. So you can to connect to container directly by his DNS name
 # So you can connect to php container to port 9000 from another container with "php:9000" (see nginx site config for example) because this container has DNS name "php"
 version: "3.5"
@@ -7,23 +8,32 @@ services:
 
   # nginx service configuration. Use "alpine" versions because it has very small volumes
   # WARNING: you can't use apt-get commands in alpine containers, so use it only if you want fully standard functionality
-  nginx_php:
-      container_name: ${APPNAME}_nginx_php
-      build:
-          context: ./nginx_php/
-      working_dir: ${SITE_WORKDIR_IN_CONTAINER}
-      ports:
-      - 80:8080 #host:container
-      volumes:
-      - ./..:${SITE_WORKDIR_IN_CONTAINER}
-      - ./sites-enabled:/etc/nginx/sites-enabled
-#      - ./nginx_php/site.conf:/etc/nginx/sites-enabled/site.conf # local site configuration
-      links:
-      - db
-      restart: always
+  nginx:
+    image: nginx:mainline-alpine
+    container_name: ${APPNAME}_nginx
+    working_dir: ${SITE_WORKDIR_IN_CONTAINER}
+    ports:
+    - 80:80
+    volumes:
+    - ./..:/var/www
+    - ./sites-enabled:/etc/nginx/sites-enabled
+    - ./nginx_php/config/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - php73
+    links:
+      - php73
 
-  # you can connect to mysql from php code or from another container with "db:3306" because this container has DNS name "db"
-  # you can connect to mysql from localhost (with programs like SQL Workbench) with localhost:3306
+  php73:
+    container_name: ${APPNAME}_php
+    build:
+      context: ./php
+    working_dir: ${SITE_WORKDIR_IN_CONTAINER}
+    volumes:
+    - ./..:${SITE_WORKDIR_IN_CONTAINER}
+    links:
+    - db
+    restart: always
+
   db:
     image: mysql:${MYSQL_VERSION}
     container_name: ${APPNAME}_mysql
@@ -40,16 +50,3 @@ services:
     # command needed for default encoding= utf8
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     restart: always
-
-  redis:
-    container_name: ${APPNAME}_redis
-    image: redis:5-alpine
-    ports:
-    - 6379:6379
-
-  memcached:
-    container_name: ${APPNAME}_memcached
-    image: memcached:1.5.16-alpine
-    ports:
-    - 11211:11211
-
