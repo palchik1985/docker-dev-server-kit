@@ -40,11 +40,13 @@ services:
     restart: always
 
   redis:
+    container_name: ${APPNAME}_redis
     image: redis:5-alpine
     ports:
     - 6379:6379
 
   memcached:
+    container_name: ${APPNAME}_memcached
     image: memcached:1.5.16-alpine
     ports:
     - 11211:11211
