@@ -6,18 +6,16 @@ services:
 
   # nginx service configuration. Use "alpine" versions because it has very small volumes
   # WARNING: you can't use apt-get commands in alpine containers, so use it only if you want fully standard functionality
-  nginx_php:
-    container_name: ${APPNAME}_nginx_php
+  php73:
+    container_name: ${APPNAME}_php
     build:
       context: ./internal/nginx_php/
     working_dir: ${SITE_WORKDIR_IN_CONTAINER}
     ports:
-    - 80:8080 #host:container
+    - 9073:9073 #host:container
     volumes:
     - ./..:${SITE_WORKDIR_IN_CONTAINER}
     - ./internal/nginx_php/site.conf:/etc/nginx/sites-enabled/site.conf # local site configuration
-    links:
-    - db
     restart: always
 
   # you can connect to mysql from php code or from another container with "db:3306" because this container has DNS name "db"
