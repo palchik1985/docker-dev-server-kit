@@ -1,4 +1,5 @@
   redis:
+    container_name: ${APPNAME}_redis
     image: redis:5-alpine
     ports:
     - 6379:6379

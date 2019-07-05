@@ -1,9 +1,9 @@
 server {
     #default port in container is 8080
     listen 8080;
-    server_name spabook.local;
+    server_name ${APPNAME}.${ENV};
 
-    root /var/www/html/public;
+    root ${SITE_WORKDIR_IN_CONTAINER}/public;
     index index.php index.html index.htm;
 
     # all logs you can see with command $ docker logs -f <container_name>

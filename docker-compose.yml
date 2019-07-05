@@ -1,36 +1,26 @@
 # during to work, all containers have internal lan, and have DNS names like their names. So you can to connect to container directly by his DNS name
 # So you can connect to php container to port 9000 from another container with "php:9000" (see nginx site config for example) because this container has DNS name "php"
-version: "3"
+version: "3.5"
 
 services:
 
-  nginx:
-    image: nginx:mainline-alpine
-    container_name: ${APPNAME}_nginx
-    ports:
-    - 80:80
-    #      - 443:443
-    volumes:
-    - ./..:${SITE_WORKDIR_IN_CONTAINER}
-    - ./nginx/logs:/var/log/nginx # you can find logs - ./nginx/logs
-    - ./sites-enabled:/etc/nginx/sites-enabled
-#    - ./nginx/site.conf:/etc/nginx/conf.d/site.conf # local site configuration
-    - ./internal/nginx_php/config/nginx.conf:/etc/nginx/nginx.conf
-    depends_on:
-    - php73
+
   # nginx service configuration. Use "alpine" versions because it has very small volumes
   # WARNING: you can't use apt-get commands in alpine containers, so use it only if you want fully standard functionality
-  php73:
-    container_name: ${APPNAME}_php
-    build:
-      context: ./internal/nginx_php/
-    working_dir: ${SITE_WORKDIR_IN_CONTAINER}
-    ports:
-    - 9073:9073 #host:container
-    volumes:
-    - ./..:${SITE_WORKDIR_IN_CONTAINER}
-#    - ./internal/nginx_php/site.conf:/etc/nginx/sites-enabled/site.conf # local site configuration
-    restart: always
+  nginx_php:
+      container_name: ${APPNAME}_nginx_php
+      build:
+          context: ./nginx_php/
+      working_dir: ${SITE_WORKDIR_IN_CONTAINER}
+      ports:
+      - 80:8080 #host:container
+      volumes:
+      - ./..:${SITE_WORKDIR_IN_CONTAINER}
+      - ./sites-enabled:/etc/nginx/sites-enabled
+#      - ./nginx_php/site.conf:/etc/nginx/sites-enabled/site.conf # local site configuration
+      links:
+      - db
+      restart: always
 
   # you can connect to mysql from php code or from another container with "db:3306" because this container has DNS name "db"
   # you can connect to mysql from localhost (with programs like SQL Workbench) with localhost:3306
@@ -62,3 +52,4 @@ services:
     image: memcached:1.5.16-alpine
     ports:
     - 11211:11211
+
