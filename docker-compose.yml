@@ -30,6 +30,7 @@ services:
     working_dir: ${SITE_WORKDIR_IN_CONTAINER}
     volumes:
     - ./..:${SITE_WORKDIR_IN_CONTAINER}
+    - ./php/php.ini:/etc/php/fpm/php.ini
     links:
     - db
     restart: always
