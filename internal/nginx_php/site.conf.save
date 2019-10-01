@@ -1,9 +1,9 @@
 server {
     #default port in container is 8080
-    listen 80;
-    server_name bookingspa.bigdig.com.ua;
+    listen 8080;
+    server_name _;
 
-    root /var/www/bookingspa.bigdig.com.ua/public;
+    root /var/www/html/;
     index index.php index.html index.htm;
 
     # all logs you can see with command $ docker logs -f <container_name>
@@ -14,11 +14,10 @@ server {
 
     location ~ \.php$ {
         fastcgi_split_path_info ^(.+\.php)(/.+)$;
-        fastcgi_pass  php73:9000;
+        fastcgi_pass  127.0.0.1:9000;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         fastcgi_param SCRIPT_NAME $fastcgi_script_name;
         fastcgi_index index.php;
         include fastcgi_params;
-
     }
 }

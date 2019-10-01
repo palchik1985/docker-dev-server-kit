@@ -1,0 +1,4 @@
+2019/07/05 11:54:31 [emerg] 1#1: getpwnam("1000") failed in /etc/nginx/nginx.conf:1
+2019/07/05 11:55:30 [emerg] 1#1: getpwnam("1000") failed in /etc/nginx/nginx.conf:1
+2019/07/05 11:56:28 [warn] 1#1: conflicting server name "_" on 0.0.0.0:80, ignored
+2019/07/05 12:00:47 [warn] 1#1: conflicting server name "_" on 0.0.0.0:80, ignored

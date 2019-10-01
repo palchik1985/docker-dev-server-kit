@@ -3,36 +3,32 @@ FROM composer:latest AS composer
 FROM php:7.3-fpm-alpine
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
-# change repository from alpine 3.9 to 3.10
-RUN sed -i -e 's/v3\.9/v3.10/g' /etc/apk/repositories
-# Install packages see http://dl-cdn.alpinelinux.org/alpine/v3.10/community/x86_64/
-#RUN apk add --update --no-cache zip zlib-dev libzip-dev && \
-#    docker-php-ext-install mysqli pdo_mysql sockets exif zip posix \
-#    && docker-php-ext-configure intl \
-#    && docker-php-ext-install intl
-RUN docker-php-ext-install mysqli pdo_mysql
-
-RUN apk --update --no-cache add git curl php7 php7-fpm php7-xdebug php7-tidy php7-intl php7-pdo_mysql \
-    php7-mysqli php7-sockets php7-exif php7-zip php7-memcached nano
+RUN apk add --update --no-cache --virtual .build-deps $PHPIZE_DEPS icu-dev \
+    git curl nano supervisor \
+    freetype-dev libjpeg-turbo-dev libpng-dev \
+    libxml2-dev tidyhtml-dev libxslt-dev libzip-dev \
+    libmemcached-dev zlib-dev \  
+    && pecl install igbinary \
+    && pecl install memcached \
+    && docker-php-source extract \
+    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+    && docker-php-ext-install -j$(nproc) gd \
+    && docker-php-ext-install exif intl mysqli pdo_mysql soap sockets tidy xsl zip \
+#    && git clone -b php7 https://github.com/php-memcached-dev/php-memcached /usr/src/php/ext/memcached \
+#    && docker-php-ext-configure /usr/src/php/ext/memcached \
+#        --disable-memcached-sasl \
+    && docker-php-ext-enable igbinary memcached gd intl tidy xsl zip \
+    && docker-php-source delete \
+    && apk add --update --no-cache --virtual git curl nano supervisor \
+    && apk del .build-deps \   
+    && rm -rf /tmp/* /var/cache/apk/* 
+# Configure supervisord
+COPY ./supervisord.conf /etc/supervisor/supervisord.conf
 
 RUN apk --no-cache add shadow && \
     usermod -u 1000 www-data; \
     groupmod -g 1000 www-data;
 
-# Configure nginx
-#COPY config/nginx.conf /etc/nginx/nginx.conf
-
-# Configure PHP-FPM
-#COPY config/fpm-pool.conf /etc/php7/php-fpm.d/www.conf
-#COPY config/php.ini /etc/php7/conf.d/zzz_custom.i
-# Configure supervisord
-#COPY config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Make sure files/folders needed by the processes are accessable when they run under the nobody user
-
-
-# Setup document root
-#RUN mkdir -p /var/www/html
 
 # Switch to use a non-root user from here on
 USER www-data
@@ -43,10 +39,5 @@ WORKDIR /var/www
 STOPSIGNAL SIGQUIT
 # Expose the port nginx is reachable on
 EXPOSE 9000
-CMD ["php-fpm"]
-
-# Let supervisord start nginx & php-fpm
-#CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
-
-# Configure a healthcheck to validate that everything is up&running
-#HEALTHCHECK --timeout=10s CMD curl --silent --fail http://127.0.0.1:8080/fpm-ping
+CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+#CMD ["php-fpm"]
