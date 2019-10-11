@@ -59,12 +59,14 @@ services:
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     restart: always
 
-#  supervisor:
-#    container_name: ${APPNAME}_supervisor
-#    build:
-#      context: ./supervisor
-#    working_dir: ${SITE_WORKDIR_IN_CONTAINER}
-#    command: supervisord -n -c /var/www/server/supervisor/supervisord.conf
-#    volumes:
-#    - ./..:/var/www
+  memcached:
+    container_name: ${APPNAME}_memcached
+    image: memcached:1.5.16-alpine
+    ports:
+      - 11211:11211
 
+  redis:
+    container_name: ${APPNAME}_redis
+    image: redis:5-alpine
+    ports:
+      - 6379:6379

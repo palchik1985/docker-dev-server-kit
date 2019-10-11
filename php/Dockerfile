@@ -3,22 +3,28 @@ FROM composer:latest AS composer
 FROM php:7.3-fpm-alpine
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
-RUN apk add --update icu-dev git curl nano \
+RUN apk add --update icu-dev git curl nano bash \
     supervisor \
-    freetype-dev libjpeg-turbo-dev libpng-dev \
-    libxml2-dev tidyhtml-dev libxslt-dev libzip-dev zlib-dev \
-#    libmemcached-dev \
-#    && pecl install igbinary \
-#    && pecl install memcached \
-    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+    #libs for php-gd:
+    freetype-dev libjpeg-turbo-dev libpng-dev ffmpeg \
+    #libs for php-extensions:
+    libxml2-dev tidyhtml-dev libxslt-dev libzip-dev zlib-dev libmemcached-dev
+
+RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-install -j$(nproc) gd \
     && docker-php-ext-install exif intl mysqli pdo_mysql soap sockets tidy xsl zip \
-#    && git clone -b php7 https://github.com/php-memcached-dev/php-memcached /usr/src/php/ext/memcached \
-#    && docker-php-ext-configure /usr/src/php/ext/memcached \
-#        --disable-memcached-sasl
-#    && docker-php-source delete \
-    && apk del freetype-dev libjpeg-turbo-dev libpng-dev \
-    && rm -rf /tmp/* /var/cache/apk/*
+    && apk del freetype-dev libjpeg-turbo-dev libpng-dev
+#install redis & memcached
+RUN apk --no-cache add $PHPIZE_DEPS \
+    && pecl install igbinary \
+    && pecl install memcached redis \
+    && git clone -b php7 https://github.com/php-memcached-dev/php-memcached /usr/src/php/ext/memcached \
+    && docker-php-ext-configure /usr/src/php/ext/memcached \
+        --disable-memcached-sasl \
+    && docker-php-ext-enable redis memcached \
+    && apk del $PHPIZE_DEPS
+RUN rm -rf /tmp/* /var/cache/apk/*
+
 # Configure supervisord
 COPY ./supervisord.conf /etc/supervisor/supervisord.conf
 
